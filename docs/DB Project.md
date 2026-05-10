@@ -343,7 +343,9 @@ ALTER TABLE Payroll_Summary ADD CONSTRAINT fk_pay_emp FOREIGN KEY (fk_employee_i
 ALTER TABLE Payroll_Summary ADD CONSTRAINT fk_pay_company FOREIGN KEY (fk_company_id) REFERENCES Companies(company_id);
 
 -- Payroll Logs
-ALTER TABLE Payroll_Logs ADD CONSTRAINT fk_log_payroll FOREIGN KEY (fk_payroll_id) REFERENCES Payroll_Summary(payroll_id);
+-- NOT: fk_log_payroll FK'si KASTEN eklenmedi. Audit log tabloları kaynak tabloya FK ile bağlanmaz;
+-- aksi halde bordro DELETE edildiğinde mevcut INSERT/UPDATE logları yüzünden FK ihlali olur (ORA-02292)
+-- ve trigger DELETE log'unu yazamaz. Audit log = kalıcı, kaynak = mutable.
 ALTER TABLE Payroll_Logs ADD CONSTRAINT fk_log_company FOREIGN KEY (fk_company_id) REFERENCES Companies(company_id);
 ALTER TABLE Payroll_Logs ADD CONSTRAINT fk_log_user FOREIGN KEY (fk_user_id) REFERENCES Users(user_id);
 
@@ -391,6 +393,19 @@ CREATE OR REPLACE PACKAGE pkg_payroll_entry AS
     
     -- Çalışan Sözleşmesi Ekleme
     PROCEDURE add_contract(p_contract_id NUMBER, p_emp_id NUMBER, p_company_id NUMBER, p_multiplier NUMBER);
+    
+    -- Bordro Kaydı Ekleme
+    PROCEDURE add_payroll(
+        p_payroll_id     NUMBER,
+        p_employee_id    NUMBER,
+        p_company_id     NUMBER,
+        p_period_month   NUMBER,
+        p_period_year    NUMBER,
+        p_gross_salary   NUMBER,
+        p_net_salary     NUMBER,
+        p_total_tax      NUMBER,
+        p_payment_status VARCHAR2
+    );
 END pkg_payroll_entry;
 /
 ```
@@ -436,6 +451,31 @@ CREATE OR REPLACE PACKAGE BODY pkg_payroll_entry AS
         INSERT INTO Employee_Contracts (contract_id, fk_employee_id, fk_company_id, salary_multiplier, contract_start_date) 
         VALUES (p_contract_id, p_emp_id, p_company_id, p_multiplier, SYSDATE);
     END add_contract;
+
+    PROCEDURE add_payroll(
+        p_payroll_id     NUMBER,
+        p_employee_id    NUMBER,
+        p_company_id     NUMBER,
+        p_period_month   NUMBER,
+        p_period_year    NUMBER,
+        p_gross_salary   NUMBER,
+        p_net_salary     NUMBER,
+        p_total_tax      NUMBER,
+        p_payment_status VARCHAR2
+    ) IS
+    BEGIN
+        INSERT INTO Payroll_Summary (
+            payroll_id, fk_employee_id, fk_company_id,
+            period_month, period_year,
+            gross_salary, net_salary, total_tax,
+            payment_status, payment_date
+        ) VALUES (
+            p_payroll_id, p_employee_id, p_company_id,
+            p_period_month, p_period_year,
+            p_gross_salary, p_net_salary, p_total_tax,
+            p_payment_status, SYSDATE
+        );
+    END add_payroll;
 
 END pkg_payroll_entry;
 /
@@ -872,8 +912,99 @@ BEGIN
         v_target_payroll_id,
         v_target_company_id,
         NULL, -- Tetikleyici veritabanı seviyesinde çalıştığı için uygulama kullanıcısı boş geçilir
+        v_action_type,
         CURRENT_TIMESTAMP
     );
+END;
+/
+```
+
+## 7.1. Trigger Test Bloğu
+
+Aşağıdaki PL/SQL bloğu, Adım 7'de oluşturulan iki tetikleyicinin (`trg_after_emp_insert` ve `trg_payroll_audit`) doğru çalıştığını doğrular. Test sırasıyla; yeni bir personel ekleyip otomatik puantaj kaydını kontrol eder, ardından test personeli için bordro INSERT, UPDATE ve DELETE işlemleri yaparak her birinde Payroll_Logs tablosuna otomatik log atılıp atılmadığını doğrular. Test bloğu son adımda oluşturduğu test verilerini ve logları temizler, böylece veritabanı orijinal haline döner.
+
+```PLSQL
+SET SERVEROUTPUT ON;
+
+DECLARE
+    v_attendance_count NUMBER;
+    v_log_count        NUMBER;
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('=== TRIGGER TEST BLOGU BASLADI ===');
+    DBMS_OUTPUT.PUT_LINE('');
+
+    -- TEST 1: Personel ekleme trigger'i (trg_after_emp_insert)
+    DBMS_OUTPUT.PUT_LINE('TEST 1: Yeni personel ekleniyor (ID=9999)...');
+    
+    pkg_payroll_entry.add_employee(
+        p_emp_id      => 9999,
+        p_company_id  => 1,
+        p_dept_id     => 100,
+        p_job_id      => 200,
+        p_national_id => '99999999999',
+        p_first_name  => 'Test',
+        p_last_name   => 'Personeli'
+    );
+    
+    SELECT COUNT(*) INTO v_attendance_count
+    FROM Attendance_Records WHERE fk_employee_id = 9999;
+    
+    DBMS_OUTPUT.PUT_LINE('--> Trigger sonucu: ' || v_attendance_count || ' adet puantaj kaydi otomatik olusturuldu.');
+    DBMS_OUTPUT.PUT_LINE('');
+
+    -- TEST 2: Bordro INSERT trigger'i (trg_payroll_audit - INSERTING)
+    DBMS_OUTPUT.PUT_LINE('TEST 2: Test personeli icin bordro ekleniyor (payroll_id=9999)...');
+    
+    pkg_payroll_entry.add_payroll(
+        p_payroll_id     => 9999,
+        p_employee_id    => 9999,
+        p_company_id     => 1,
+        p_period_month   => 5,
+        p_period_year    => 2026,
+        p_gross_salary   => 120000,
+        p_net_salary     => 95000,
+        p_total_tax      => 25000,
+        p_payment_status => 'PAID'
+    );
+    
+    SELECT COUNT(*) INTO v_log_count FROM Payroll_Logs WHERE fk_payroll_id = 9999;
+    DBMS_OUTPUT.PUT_LINE('--> Trigger sonucu: ' || v_log_count || ' adet INSERT logu olusturuldu.');
+    DBMS_OUTPUT.PUT_LINE('');
+
+    -- TEST 3: Bordro UPDATE trigger'i (trg_payroll_audit - UPDATING)
+    DBMS_OUTPUT.PUT_LINE('TEST 3: Bordro guncelleniyor...');
+    UPDATE Payroll_Summary SET net_salary = 100000 WHERE payroll_id = 9999;
+    SELECT COUNT(*) INTO v_log_count FROM Payroll_Logs WHERE fk_payroll_id = 9999;
+    DBMS_OUTPUT.PUT_LINE('--> Trigger sonucu: Toplam ' || v_log_count || ' adet log var.');
+    DBMS_OUTPUT.PUT_LINE('');
+
+    -- TEST 4: Bordro DELETE trigger'i (trg_payroll_audit - DELETING)
+    DBMS_OUTPUT.PUT_LINE('TEST 4: Bordro siliniyor...');
+    DELETE FROM Payroll_Summary WHERE payroll_id = 9999;
+    SELECT COUNT(*) INTO v_log_count FROM Payroll_Logs WHERE fk_payroll_id = 9999;
+    DBMS_OUTPUT.PUT_LINE('--> Trigger sonucu: Toplam ' || v_log_count || ' adet log var.');
+    DBMS_OUTPUT.PUT_LINE('');
+
+    -- Loglarin detayli listesi
+    DBMS_OUTPUT.PUT_LINE('=== OLUSTURULAN LOGLARIN DETAYI ===');
+    FOR rec IN (SELECT log_id, action_type FROM Payroll_Logs 
+                WHERE fk_payroll_id = 9999 ORDER BY action_timestamp) LOOP
+        DBMS_OUTPUT.PUT_LINE('Log ID: ' || rec.log_id || ' | Islem: ' || rec.action_type);
+    END LOOP;
+    
+    DBMS_OUTPUT.PUT_LINE('');
+    DBMS_OUTPUT.PUT_LINE('=== TEST TAMAMLANDI ===');
+
+    -- Test verilerini temizle (veritabanini orijinal haline dondur)
+    DELETE FROM Payroll_Logs WHERE fk_payroll_id = 9999;
+    DELETE FROM Attendance_Records WHERE fk_employee_id = 9999;
+    DELETE FROM Employees WHERE employee_id = 9999;
+    COMMIT;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        ROLLBACK;
+        DBMS_OUTPUT.PUT_LINE('HATA: ' || SQLERRM);
 END;
 /
 ```
@@ -1091,9 +1222,13 @@ CREATE OR REPLACE PACKAGE BODY pkg_payroll_maintenance AS
     PROCEDURE remove_all_duplicates IS
     BEGIN
         -- 1. Companies (Aynı vergi numarasına sahip kopyaları sil)
+        -- NULL tax_number'lar dedupe'a alınmaz (ayrı şirketler olabilir, kötü değer değil)
         DELETE FROM Companies 
-        WHERE rowid NOT IN (
-            SELECT MIN(rowid) FROM Companies GROUP BY tax_number
+        WHERE tax_number IS NOT NULL
+          AND rowid NOT IN (
+            SELECT MIN(rowid) FROM Companies 
+            WHERE tax_number IS NOT NULL
+            GROUP BY tax_number
         );
 
         -- 2. Users (Aynı şirketteki aynı kullanıcı adlarını sil)
