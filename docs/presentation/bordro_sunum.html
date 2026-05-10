@@ -1,0 +1,3366 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1280">
+<title>Bordro Yönetim Sistemi · Veritabanı Tasarımı</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+
+<style>
+:root {
+  --paper:       #f5f1e8;
+  --paper-deep:  #ebe3d0;
+  --paper-edge:  #d8ceb6;
+  --ink:         #14110d;
+  --ink-soft:    #2a2620;
+  --muted:       #6f6557;
+  --muted-soft:  #968b7a;
+  --hair:        #c5b9a0;
+  --hair-soft:   #ddd2bc;
+  --accent:      #7a1f1f;
+  --accent-deep: #5a1414;
+  --accent-soft: #9a3030;
+  --accent-bg:   rgba(122,31,31,0.10);
+  --accent-bg-2: rgba(122,31,31,0.05);
+
+  --code-bg:     #14110d;
+  --code-text:   #ebe3d0;
+}
+
+html, body { background: var(--paper); margin: 0; }
+
+.reveal {
+  font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+  font-weight: 400;
+  color: var(--ink);
+  background: var(--paper);
+  letter-spacing: 0;
+}
+.reveal .slides { text-align: left; }
+.reveal .slides section {
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  background: var(--paper);
+  text-align: left;
+  top: 0 !important;
+}
+.reveal .slides section.present {
+  display: flex !important;
+  flex-direction: column;
+}
+.reveal h1, .reveal h2, .reveal h3, .reveal h4, .reveal h5 {
+  font-family: 'IBM Plex Serif', Georgia, serif;
+  color: var(--ink);
+  text-transform: none;
+  margin: 0;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.05;
+  text-align: left;
+}
+.reveal p { margin: 0; }
+.reveal ::selection { background: var(--accent); color: var(--paper); }
+.reveal .progress { background: rgba(20,17,13,0.08); color: var(--accent); height: 2px; }
+.reveal .controls { color: var(--accent); }
+.reveal .backgrounds { background: var(--paper); }
+.reveal-viewport { background: var(--paper); }
+
+.slide {
+  width: 1280px;
+  height: 800px;
+  padding: 44px 72px 40px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.tabular { font-variant-numeric: tabular-nums; }
+
+/* ---- top header strip (eyebrow + slide num) ---- */
+.top-strip {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--hair);
+  margin-bottom: 28px;
+}
+.top-strip .eyebrow {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  color: var(--accent);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.top-strip .pagenum {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  text-transform: uppercase;
+  font-weight: 500;
+}
+.top-strip .pagenum b {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* ---- section title ---- */
+.section-title {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 54px;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  margin-bottom: 22px;
+  color: var(--ink);
+}
+.section-title em {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--accent);
+}
+
+.subhead {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  color: var(--accent);
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 14px;
+  display: block;
+}
+
+/* =============================================================
+   SLIDE 1 — COVER
+   ============================================================= */
+.s-cover { padding: 56px 72px 48px; }
+.s-cover .topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 1px solid var(--hair);
+  padding-bottom: 14px;
+}
+.s-cover .topbar .left {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  color: var(--accent);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.s-cover .topbar .right {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.s-cover .title-wrap {
+  margin-top: 96px;
+  flex: 1;
+}
+.s-cover .marker {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin-bottom: 22px;
+}
+.s-cover .marker::before {
+  content: '';
+  display: inline-block;
+  width: 32px;
+  height: 1px;
+  background: var(--muted);
+  vertical-align: middle;
+  margin-right: 12px;
+  margin-bottom: 3px;
+}
+.s-cover h1 {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 132px;
+  font-weight: 300;
+  line-height: 0.95;
+  letter-spacing: -0.035em;
+  color: var(--ink);
+}
+.s-cover h1 em {
+  display: block;
+  font-style: italic;
+  font-weight: 400;
+  color: var(--accent);
+}
+.s-cover .sub {
+  font-family: 'IBM Plex Serif', serif;
+  font-style: italic;
+  font-size: 22px;
+  font-weight: 300;
+  color: var(--muted);
+  margin-top: 22px;
+  max-width: 780px;
+  line-height: 1.35;
+}
+.s-cover .footer {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 32px;
+  margin-top: auto;
+  padding-top: 22px;
+  border-top: 2px solid var(--ink);
+}
+.s-cover .footer .col .lbl {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.s-cover .footer .col .val {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+}
+.s-cover .footer .col .val em {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--accent);
+}
+
+/* =============================================================
+   SLIDE 2 — PROJE ÖZETİ (2 column bullets)
+   ============================================================= */
+.s-overview .body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 72px;
+  margin-top: 4px;
+  flex: 1;
+}
+.s-overview .body > div { border-top: 2px solid var(--ink); padding-top: 18px; }
+.s-overview ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.s-overview ul li {
+  position: relative;
+  padding-left: 32px;
+  margin-bottom: 18px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--ink);
+}
+.s-overview ul li .n {
+  position: absolute;
+  left: 0;
+  top: 2px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--accent);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+.s-overview ul li strong { font-weight: 600; color: var(--ink); }
+.s-overview ul li code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  background: var(--accent-bg);
+  color: var(--accent);
+  padding: 1px 5px;
+  font-weight: 500;
+}
+
+/* =============================================================
+   SLIDE 3 — STRUCTURE CARDS
+   ============================================================= */
+.s-structure .cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-top: 4px;
+  flex: 1;
+}
+.s-structure .card {
+  background: rgba(235, 227, 208, 0.4);
+  border: 1px solid var(--hair);
+  border-top: 3px solid var(--ink);
+  padding: 20px 20px 22px;
+  display: flex;
+  flex-direction: column;
+}
+.s-structure .card.accent {
+  border: 1px solid var(--accent);
+  border-top: 3px solid var(--accent);
+  background: var(--accent-bg-2);
+}
+.s-structure .card .head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 14px;
+}
+.s-structure .card .head .lbl {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  text-transform: uppercase;
+  font-weight: 500;
+}
+.s-structure .card .head .num {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 56px;
+  font-weight: 300;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  color: var(--ink);
+}
+.s-structure .card.accent .head .num { color: var(--accent); }
+.s-structure .card .title {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--ink);
+  margin-bottom: 14px;
+  line-height: 1.15;
+}
+.s-structure .card .title em {
+  display: block;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--muted-soft);
+  margin-top: 4px;
+}
+.s-structure .chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.s-structure .chip {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  border: 1px solid var(--hair);
+  border-radius: 2px;
+  padding: 3px 6px;
+  background: var(--paper);
+  text-transform: uppercase;
+  font-weight: 500;
+}
+.s-structure .card.accent .chip {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.s-structure .card .caption {
+  margin-top: 12px;
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 13px;
+  font-weight: 400;
+  font-style: italic;
+  color: var(--muted);
+  line-height: 1.4;
+}
+.s-structure .footnote {
+  margin-top: 22px;
+  padding: 14px 18px;
+  border-left: 3px solid var(--accent);
+  background: var(--accent-bg-2);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--ink);
+  line-height: 1.45;
+}
+.s-structure .footnote strong { font-weight: 600; color: var(--accent); }
+.s-structure .footnote code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: var(--accent);
+  background: var(--paper);
+  padding: 1px 5px;
+  font-weight: 600;
+}
+
+/* =============================================================
+   SLIDE 4 — ER WITH PNG PLACEHOLDER
+   ============================================================= */
+.s-er .body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 44px;
+  margin-top: 4px;
+  flex: 1;
+  align-items: start;
+}
+.s-er .er-card {
+  background: var(--accent-bg-2);
+  border: 2px dashed var(--accent);
+  padding: 24px;
+  height: 460px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+}
+.s-er .er-card .ph-tag {
+  position: absolute;
+  top: 12px;
+  left: 14px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: var(--accent);
+  text-transform: uppercase;
+  font-weight: 600;
+  background: var(--paper);
+  padding: 2px 8px;
+}
+.s-er .er-card .ph-icon {
+  width: 56px;
+  height: 56px;
+  border: 2px solid var(--accent);
+  margin-bottom: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'IBM Plex Serif', serif;
+  font-style: italic;
+  font-size: 30px;
+  color: var(--accent);
+  line-height: 1;
+}
+.s-er .er-card .ph-title {
+  font-family: 'IBM Plex Serif', serif;
+  font-style: italic;
+  font-size: 24px;
+  font-weight: 400;
+  color: var(--accent);
+  margin-bottom: 12px;
+  line-height: 1.2;
+}
+.s-er .er-card .ph-hint {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+  max-width: 360px;
+}
+.s-er .rel-table { border-top: 2px solid var(--ink); padding-top: 18px; }
+.s-er table { width: 100%; border-collapse: collapse; }
+.s-er table th {
+  text-align: left;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+  text-transform: uppercase;
+  font-weight: 600;
+  padding: 0 0 12px;
+  border-bottom: 1px solid var(--ink);
+}
+.s-er table td {
+  padding: 11px 0;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink);
+  border-bottom: 1px solid var(--hair);
+}
+.s-er table td.dim {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 400;
+}
+.s-er table td:last-child {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  color: var(--accent);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* =============================================================
+   SLIDE 3 v3 — STRONG / WEAK ENTITY GRID
+   ============================================================= */
+.s-entities .body {
+  display: grid;
+  grid-template-columns: 1.85fr 1fr;
+  gap: 32px;
+  flex: 1;
+  margin-top: 4px;
+}
+.s-entities .col-section {
+  display: flex;
+  flex-direction: column;
+}
+.s-entities .col-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  border-bottom: 2px solid var(--ink);
+  padding-bottom: 10px;
+  margin-bottom: 14px;
+}
+.s-entities .col-head .num {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 72px;
+  font-weight: 300;
+  color: var(--ink);
+  letter-spacing: -0.04em;
+  line-height: 0.9;
+}
+.s-entities .col-section.weak .col-head { border-bottom: 2px solid var(--accent); }
+.s-entities .col-section.weak .col-head .num { color: var(--accent); }
+.s-entities .col-head .titlebox { text-align: right; }
+.s-entities .col-head .lbl {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.s-entities .col-head h3 {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+}
+.s-entities .col-head h3 em { font-style: italic; font-weight: 400; color: var(--accent); }
+.s-entities .ents {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  flex: 1;
+}
+.s-entities .col-section.weak .ents { grid-template-columns: 1fr; }
+.s-entities .ent {
+  border: 1.5px solid var(--ink);
+  padding: 10px 12px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  background: var(--paper);
+  text-transform: uppercase;
+  position: relative;
+  line-height: 1.25;
+}
+.s-entities .ent.featured {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+.s-entities .col-section.weak .ent {
+  border: 1.5px solid var(--accent);
+  color: var(--accent);
+  padding: 12px 14px 14px;
+  background: var(--accent-bg-2);
+}
+.s-entities .col-section.weak .ent::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border: 1px solid var(--accent);
+  pointer-events: none;
+}
+.s-entities .ent .sub {
+  display: block;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  text-transform: none;
+  margin-top: 3px;
+}
+.s-entities .ent.featured .sub { color: var(--paper-edge); }
+.s-entities .col-section.weak .ent .sub { color: var(--accent-soft); }
+.s-entities .desc-note {
+  margin-top: 14px;
+  padding: 12px 16px;
+  border-left: 3px solid var(--ink);
+  background: rgba(235, 227, 208, 0.4);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  line-height: 1.45;
+}
+.s-entities .col-section.weak .desc-note {
+  border-left-color: var(--accent);
+  background: var(--accent-bg-2);
+}
+.s-entities .desc-note strong { font-weight: 600; color: var(--accent); }
+
+.s-entities .footnote {
+  margin-top: 16px;
+  padding: 12px 18px;
+  border-left: 3px solid var(--accent);
+  background: var(--accent-bg-2);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13px;
+  color: var(--ink);
+  line-height: 1.45;
+}
+.s-entities .footnote strong { font-weight: 600; color: var(--accent); }
+.s-entities .footnote code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11.5px;
+  color: var(--accent);
+  background: var(--paper);
+  padding: 1px 5px;
+  font-weight: 600;
+}
+
+/* =============================================================
+   SLIDE 6 v4 — KISITLAR SADE 2x2 KART (yeni)
+   ============================================================= */
+.s-idx4 .grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  flex: 1;
+  margin-top: 4px;
+}
+.s-idx4 .card {
+  border: 1px solid var(--hair);
+  border-top: 3px solid var(--ink);
+  background: rgba(235, 227, 208, 0.4);
+  padding: 22px 26px;
+  display: flex;
+  flex-direction: column;
+}
+.s-idx4 .card.accent {
+  border: 1px solid var(--accent);
+  border-top: 3px solid var(--accent);
+  background: var(--accent-bg-2);
+}
+.s-idx4 .card .head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--hair);
+}
+.s-idx4 .card .num {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 60px;
+  font-weight: 300;
+  color: var(--ink);
+  letter-spacing: -0.04em;
+  line-height: 0.9;
+}
+.s-idx4 .card.accent .num { color: var(--accent); }
+.s-idx4 .card .lbl {
+  text-align: right;
+  align-self: center;
+}
+.s-idx4 .card .lbl .term {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+  text-transform: uppercase;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.s-idx4 .card.accent .lbl .term { color: var(--accent); }
+.s-idx4 .card h4 {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: -0.015em;
+  margin-bottom: 10px;
+  line-height: 1.2;
+}
+.s-idx4 .card p {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--ink-soft);
+  line-height: 1.5;
+  margin-bottom: 14px;
+}
+.s-idx4 .card p code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  background: var(--paper);
+  color: var(--accent);
+  padding: 1px 5px;
+  font-weight: 600;
+}
+.s-idx4 .card .example {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--hair);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+  line-height: 1.6;
+}
+.s-idx4 .card .example b {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* =============================================================
+   SLIDE 6 v3 — KISITLAR DİKEY — eski, kullanılmıyor
+   ============================================================= */
+.s-idx3 .const-list {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  margin-top: 4px;
+  border-top: 2px solid var(--ink);
+}
+.s-idx3 .const-row {
+  display: grid;
+  grid-template-columns: 84px 1fr 280px;
+  gap: 22px;
+  padding: 13px 0 13px;
+  border-bottom: 1px solid var(--hair);
+  align-items: start;
+}
+.s-idx3 .const-row.accent {
+  background: var(--accent-bg-2);
+  border-left: 3px solid var(--accent);
+  padding-left: 14px;
+  margin: 0 -14px;
+  padding-right: 14px;
+}
+.s-idx3 .const-row .n {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 54px;
+  font-weight: 300;
+  color: var(--ink);
+  letter-spacing: -0.04em;
+  line-height: 0.9;
+}
+.s-idx3 .const-row.accent .n { color: var(--accent); }
+.s-idx3 .const-row .body-cell .lbl {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--accent);
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.s-idx3 .const-row .body-cell h4 {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 19px;
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  margin-bottom: 5px;
+  line-height: 1.15;
+}
+.s-idx3 .const-row .body-cell h4 em { font-style: italic; font-weight: 400; color: var(--accent); }
+.s-idx3 .const-row .body-cell p {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13px;
+  color: var(--ink-soft);
+  line-height: 1.45;
+  font-weight: 400;
+}
+.s-idx3 .const-row .body-cell p strong { color: var(--accent); font-weight: 600; }
+.s-idx3 .const-row .body-cell p code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11.5px;
+  background: var(--paper);
+  color: var(--accent);
+  padding: 1px 5px;
+  font-weight: 600;
+}
+.s-idx3 .const-row .examples {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding-top: 4px;
+}
+.s-idx3 .const-row .examples .ex {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+}
+.s-idx3 .const-row .examples .ex b {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* =============================================================
+   SLIDE 11 v3 — 3NF DİKEY: 3 detaylı blok
+   ============================================================= */
+.s-nf3 .progression {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+  margin-top: 4px;
+}
+.s-nf3 .nf-block {
+  display: grid;
+  grid-template-columns: 118px 1fr 140px;
+  align-items: stretch;
+  gap: 24px;
+  padding: 16px 20px;
+  border: 1px solid var(--hair);
+  border-left: 4px solid var(--accent);
+  background: rgba(235, 227, 208, 0.4);
+}
+.s-nf3 .nf-block .tag-block {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+}
+.s-nf3 .nf-block .tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+  border: 1.5px solid var(--accent);
+  padding: 10px 0 11px;
+  background: var(--paper);
+  margin-bottom: 8px;
+}
+.s-nf3 .nf-block .tag-block .step {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  color: var(--muted);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.s-nf3 .nf-block .content h4 {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: -0.015em;
+  margin-bottom: 8px;
+  line-height: 1.15;
+}
+.s-nf3 .nf-block .content h4 em { font-style: italic; font-weight: 400; color: var(--accent); }
+.s-nf3 .nf-block .content .principle {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13.5px;
+  color: var(--muted);
+  line-height: 1.45;
+  margin-bottom: 8px;
+}
+.s-nf3 .nf-block .content .example {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13px;
+  color: var(--ink);
+  line-height: 1.45;
+}
+.s-nf3 .nf-block .content .example strong { font-weight: 600; color: var(--accent); }
+.s-nf3 .nf-block .content .example code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11.5px;
+  background: var(--paper);
+  color: var(--accent);
+  padding: 1px 5px;
+  font-weight: 600;
+}
+.s-nf3 .nf-block .verdict {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 4px;
+}
+.s-nf3 .nf-block .verdict .check {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent);
+}
+.s-nf3 .nf-block .verdict .stat {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  line-height: 1.4;
+}
+
+/* =============================================================
+   SLIDE 2 v2 — HEDEF: ifade + 2x2 quadrant
+   ============================================================= */
+.s-ov2 .statement {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 36px;
+  font-weight: 300;
+  line-height: 1.18;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  max-width: 1040px;
+  margin-bottom: 28px;
+}
+.s-ov2 .statement em { font-style: italic; font-weight: 400; color: var(--accent); }
+.s-ov2 .quad {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 18px;
+  flex: 1;
+  border-top: 2px solid var(--ink);
+  padding-top: 18px;
+}
+.s-ov2 .qbox {
+  display: grid;
+  grid-template-columns: 60px 1fr;
+  gap: 16px;
+}
+.s-ov2 .qbox .qn {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 44px;
+  font-weight: 300;
+  color: var(--accent);
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+}
+.s-ov2 .qbox .qbody { padding-top: 4px; }
+.s-ov2 .qbox .qlbl {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.s-ov2 .qbox h4 {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  margin-bottom: 8px;
+}
+.s-ov2 .qbox h4 em { font-style: italic; font-weight: 400; color: var(--accent); }
+.s-ov2 .qbox p {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+.s-ov2 .qbox p code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  background: var(--accent-bg);
+  color: var(--accent);
+  padding: 1px 5px;
+  font-weight: 600;
+}
+
+/* =============================================================
+   SLIDE 3 v2 — STRATA (yatay katman şeritleri)
+   ============================================================= */
+.s-strata .layers {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+  margin-top: 4px;
+}
+.s-strata .layer {
+  display: grid;
+  grid-template-columns: 56px 240px 1fr 100px;
+  align-items: center;
+  gap: 18px;
+  padding: 14px 18px;
+  background: rgba(235, 227, 208, 0.4);
+  border: 1px solid var(--hair);
+  border-left: 3px solid var(--ink);
+}
+.s-strata .layer.accent {
+  border: 1px solid var(--accent);
+  border-left: 3px solid var(--accent);
+  background: var(--accent-bg-2);
+}
+.s-strata .layer .lnum {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 38px;
+  font-weight: 300;
+  color: var(--ink);
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+.s-strata .layer.accent .lnum { color: var(--accent); }
+.s-strata .layer .lhead .lbl {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.s-strata .layer .lhead .name {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 19px;
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+}
+.s-strata .layer .lhead .name em {
+  display: inline;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--muted-soft);
+  margin-left: 6px;
+}
+.s-strata .layer .chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.s-strata .layer .chip {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  border: 1px solid var(--hair);
+  padding: 3px 6px;
+  background: var(--paper);
+  text-transform: uppercase;
+  font-weight: 500;
+}
+.s-strata .layer.accent .chip {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.s-strata .layer .ltag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  text-transform: uppercase;
+  text-align: right;
+  font-weight: 500;
+}
+.s-strata .footnote {
+  margin-top: 14px;
+  padding: 13px 18px;
+  border-left: 3px solid var(--accent);
+  background: var(--accent-bg-2);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13.5px;
+  color: var(--ink);
+  line-height: 1.45;
+}
+.s-strata .footnote strong { font-weight: 600; color: var(--accent); }
+.s-strata .footnote code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: var(--accent);
+  background: var(--paper);
+  padding: 1px 5px;
+  font-weight: 600;
+}
+
+/* =============================================================
+   SLIDE 6 v2 — KISITLAR (büyük başlık + 4 numaralı kart)
+   ============================================================= */
+.s-idx2 .totals {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border-top: 2px solid var(--ink);
+  border-bottom: 1px solid var(--hair);
+  margin-bottom: 18px;
+}
+.s-idx2 .tcell {
+  padding: 12px 16px 12px 0;
+  border-right: 1px solid var(--hair);
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+.s-idx2 .tcell:last-child { border-right: 0; }
+.s-idx2 .tcell .n {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 38px;
+  font-weight: 400;
+  color: var(--ink);
+  letter-spacing: -0.025em;
+  line-height: 1;
+}
+.s-idx2 .tcell.accent .n { color: var(--accent); }
+.s-idx2 .tcell .l {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  text-transform: uppercase;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.s-idx2 .catalog {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  flex: 1;
+}
+.s-idx2 .uq-card {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: 14px;
+  padding: 14px 18px;
+  border: 1px solid var(--hair);
+  border-left: 3px solid var(--accent);
+  background: rgba(235, 227, 208, 0.4);
+}
+.s-idx2 .uq-card .qn {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 28px;
+  font-weight: 400;
+  color: var(--accent);
+  letter-spacing: -0.025em;
+  line-height: 1;
+}
+.s-idx2 .uq-card .code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  color: var(--accent);
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+.s-idx2 .uq-card .rule {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--ink);
+  line-height: 1.4;
+}
+.s-idx2 .fk-strip {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--hair);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  align-items: baseline;
+}
+.s-idx2 .fk-strip .lbl {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-right: 8px;
+}
+.s-idx2 .fk-strip .fk-item {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--ink);
+  letter-spacing: 0.02em;
+}
+.s-idx2 .fk-strip .fk-item b { color: var(--accent); font-weight: 600; }
+
+/* =============================================================
+   SLIDE 7 v2 — DML YATAY AKIŞ
+   ============================================================= */
+.s-dml2 .flow {
+  display: grid;
+  grid-template-columns: 1fr 28px 1fr 28px 1fr;
+  align-items: stretch;
+  flex: 1;
+  margin-top: 4px;
+}
+.s-dml2 .step {
+  padding: 0 4px;
+  display: flex;
+  flex-direction: column;
+}
+.s-dml2 .step .step-head {
+  border-top: 3px solid var(--accent);
+  padding: 12px 0 14px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--hair);
+}
+.s-dml2 .step .stage-row {
+  display: flex;
+  gap: 16px;
+  align-items: baseline;
+  margin-bottom: 6px;
+}
+.s-dml2 .step .stnum {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 52px;
+  font-weight: 300;
+  color: var(--accent);
+  letter-spacing: -0.045em;
+  line-height: 0.85;
+  flex-shrink: 0;
+}
+.s-dml2 .step .stbox { flex: 1; padding-top: 6px; }
+.s-dml2 .step .badge {
+  display: inline-block;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--accent);
+  text-transform: uppercase;
+  font-weight: 600;
+  border: 1px solid var(--accent);
+  padding: 3px 9px;
+  background: var(--paper);
+  margin-bottom: 10px;
+}
+.s-dml2 .step h3 {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 30px;
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  margin-bottom: 4px;
+  line-height: 1;
+}
+.s-dml2 .step h3 em { font-style: italic; font-weight: 400; color: var(--accent); }
+.s-dml2 .step .pkg {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+}
+.s-dml2 .step ul { list-style: none; margin: 0; padding: 0; }
+.s-dml2 .step ul li {
+  position: relative;
+  padding-left: 22px;
+  margin-bottom: 12px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13.5px;
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--ink);
+}
+.s-dml2 .step ul li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 9px;
+  width: 10px;
+  height: 1px;
+  background: var(--accent);
+}
+.s-dml2 .step ul li strong { font-weight: 600; color: var(--accent); }
+.s-dml2 .step ul li code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  background: var(--accent-bg);
+  color: var(--accent);
+  padding: 1px 5px;
+  font-weight: 500;
+}
+.s-dml2 .arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 28px;
+  font-weight: 300;
+  padding-top: 20px;
+}
+
+/* =============================================================
+   SLIDE 8 v2 — TRIGGER (kod sol / bullets sağ)
+   ============================================================= */
+.s-code-flip .body {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 36px;
+  margin-top: 4px;
+  flex: 1;
+}
+
+/* =============================================================
+   SLIDE 9/10 v3 — KOD SOL · DİKEY YAN BLOKLAR SAĞ
+   ============================================================= */
+.s-code-side .body {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  gap: 28px;
+  flex: 1;
+  margin-top: 4px;
+}
+.s-code-side .code-pane {
+  align-self: start;
+  margin: 0;
+}
+.s-code-side .side-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.s-code-side .side-block {
+  border-top: 2px solid var(--ink);
+  padding-top: 14px;
+}
+.s-code-side .side-block.accent { border-top-color: var(--accent); }
+.s-code-side .side-block .num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--accent);
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+.s-code-side .side-block h4 {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 19px;
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  margin-bottom: 8px;
+  line-height: 1.2;
+}
+.s-code-side .side-block h4 em { font-style: italic; font-weight: 400; color: var(--accent); }
+.s-code-side .side-block p {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--ink-soft);
+  line-height: 1.55;
+}
+.s-code-side .side-block p strong { color: var(--accent); font-weight: 600; }
+.s-code-side .side-block p code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11.5px;
+  background: var(--accent-bg);
+  color: var(--accent);
+  padding: 1px 5px;
+  font-weight: 600;
+}
+
+/* =============================================================
+   SLIDE 9 v2 — eski (kullanılmıyor)
+   ============================================================= */
+.s-code-stack .body {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  flex: 1;
+  margin-top: 4px;
+}
+.s-code-stack .code-pane { flex: 1; }
+.s-code-stack .summary-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+  padding-top: 14px;
+  border-top: 2px solid var(--ink);
+}
+.s-code-stack .sum-cell .lbl {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--accent);
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.s-code-stack .sum-cell .txt {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13.5px;
+  font-weight: 400;
+  color: var(--ink);
+  line-height: 1.45;
+}
+.s-code-stack .sum-cell .txt code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  background: var(--accent-bg);
+  color: var(--accent);
+  padding: 1px 5px;
+  font-weight: 600;
+}
+
+/* =============================================================
+   SLIDE 10 v2 — MAINTENANCE (yatay: 3 başlık üstte, kod altta tam)
+   ============================================================= */
+.s-code-top .strategy {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  margin-top: 4px;
+  margin-bottom: 16px;
+  border-top: 2px solid var(--ink);
+  padding-top: 14px;
+}
+.s-code-top .strat-cell {
+  padding: 0 22px;
+  border-right: 1px solid var(--hair);
+}
+.s-code-top .strat-cell:first-child { padding-left: 0; }
+.s-code-top .strat-cell:last-child { border-right: 0; padding-right: 0; }
+.s-code-top .strat-cell .qn {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.s-code-top .strat-cell h4 {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 19px;
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  margin-bottom: 6px;
+  line-height: 1.2;
+}
+.s-code-top .strat-cell p {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted);
+  line-height: 1.45;
+}
+.s-code-top .strat-cell p code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  background: var(--accent-bg);
+  color: var(--accent);
+  padding: 1px 5px;
+  font-weight: 600;
+}
+.s-code-top .full-code { flex: 1; }
+
+/* =============================================================
+   SLIDE 11 v2 — NF VERTICAL PROGRESSION (yatay şeritler)
+   ============================================================= */
+.s-nf2 .progression {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex: 1;
+  margin-top: 4px;
+}
+.s-nf2 .nf-row {
+  display: grid;
+  grid-template-columns: 100px 240px 1fr 130px;
+  align-items: center;
+  gap: 22px;
+  padding: 16px 20px;
+  border: 1px solid var(--hair);
+  border-left: 4px solid var(--accent);
+  background: rgba(235, 227, 208, 0.4);
+}
+.s-nf2 .nf-row .tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+  border: 1.5px solid var(--accent);
+  padding: 8px 14px;
+  background: var(--paper);
+  text-align: center;
+}
+.s-nf2 .nf-row .label .qn {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: var(--muted);
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.s-nf2 .nf-row .label .title {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+}
+.s-nf2 .nf-row .desc {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13.5px;
+  font-weight: 400;
+  color: var(--ink-soft);
+  line-height: 1.45;
+}
+.s-nf2 .nf-row .desc strong { font-weight: 600; color: var(--accent); }
+.s-nf2 .nf-row .desc code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11.5px;
+  background: var(--paper);
+  color: var(--accent);
+  padding: 1px 5px;
+  font-weight: 600;
+}
+.s-nf2 .nf-row .check {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 0.02em;
+  text-align: right;
+}
+
+/* =============================================================
+   SLIDE 12 v2 — BİLANÇO: büyük rakam üstte + yatay deliller
+   ============================================================= */
+.s-conc2 .big-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border-top: 2px solid var(--ink);
+  border-bottom: 1px solid var(--ink);
+  padding: 16px 0 14px;
+  margin-top: 4px;
+  margin-bottom: 22px;
+}
+.s-conc2 .big-stat {
+  border-right: 1px solid var(--hair);
+  padding: 0 18px 0 0;
+}
+.s-conc2 .big-stat:last-child { border-right: 0; }
+.s-conc2 .big-stat .n {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 64px;
+  font-weight: 300;
+  color: var(--accent);
+  letter-spacing: -0.035em;
+  line-height: 0.9;
+}
+.s-conc2 .big-stat .l {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-top: 8px;
+}
+.s-conc2 .evidence {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+.s-conc2 .ev-row {
+  display: grid;
+  grid-template-columns: 90px 200px 1fr;
+  gap: 22px;
+  align-items: baseline;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--hair);
+}
+.s-conc2 .ev-row .qn {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: var(--accent);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.s-conc2 .ev-row h3 {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+}
+.s-conc2 .ev-row h3 em { font-style: italic; font-weight: 400; color: var(--accent); }
+.s-conc2 .ev-row p {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13.5px;
+  font-weight: 400;
+  color: var(--ink-soft);
+  line-height: 1.45;
+}
+.s-conc2 .ev-row p strong { color: var(--accent); font-weight: 600; }
+.s-conc2 .end-line {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 2px solid var(--ink);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.s-conc2 .end-line .repo {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 600;
+}
+.s-conc2 .end-line .note {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+/* =============================================================
+   SLIDE 4 v3 — ER BÜYÜK PNG (asimetrik 2 sütun)
+   ============================================================= */
+.s-er3 .body {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 24px;
+  flex: 1;
+  margin-top: 4px;
+}
+.s-er3 .er3-png {
+  position: relative;
+  background: var(--accent-bg-2);
+  border: 2px dashed var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 600px;
+}
+.s-er3 .er3-png .ph-tag {
+  position: absolute;
+  top: 12px;
+  left: 16px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: var(--accent);
+  text-transform: uppercase;
+  font-weight: 600;
+  background: var(--paper);
+  padding: 3px 9px;
+}
+.s-er3 .er3-png .ph-corner {
+  position: absolute;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: var(--accent);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.s-er3 .er3-png .c-tl { top: 8px; right: 14px; }
+.s-er3 .er3-png .c-bl { bottom: 8px; left: 14px; }
+.s-er3 .er3-png .c-br { bottom: 8px; right: 14px; }
+.s-er3 .er3-png .ph-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 0 40px;
+}
+.s-er3 .er3-png .ph-icon {
+  width: 64px;
+  height: 64px;
+  border: 2px solid var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'IBM Plex Serif', serif;
+  font-style: italic;
+  font-size: 36px;
+  color: var(--accent);
+  margin-bottom: 22px;
+}
+.s-er3 .er3-png .ph-text {
+  font-family: 'IBM Plex Serif', serif;
+  font-style: italic;
+  font-size: 28px;
+  font-weight: 400;
+  color: var(--accent);
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+  margin-bottom: 12px;
+}
+.s-er3 .er3-png .ph-sub {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+  max-width: 420px;
+}
+
+.s-er3 .side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.s-er3 .side-block {
+  border-top: 2px solid var(--ink);
+  padding-top: 12px;
+}
+.s-er3 .side-block .lbl {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--accent);
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+.s-er3 .side-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.s-er3 .side-stat {
+  border-left: 2px solid var(--accent);
+  padding-left: 10px;
+}
+.s-er3 .side-stat .n {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 30px;
+  font-weight: 400;
+  color: var(--ink);
+  letter-spacing: -0.025em;
+  line-height: 1;
+}
+.s-er3 .side-stat .l {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+.s-er3 .side-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 6px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 12.5px;
+  font-weight: 400;
+  color: var(--ink);
+  line-height: 1.35;
+}
+.s-er3 .side-row b {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+.s-er3 .mini-single,
+.s-er3 .mini-double,
+.s-er3 .mini-line { display: inline-block; width: 22px; vertical-align: middle; flex-shrink: 0; }
+.s-er3 .mini-single { height: 12px; border: 1.5px solid var(--ink); }
+.s-er3 .mini-double { height: 12px; border: 1.5px solid var(--accent); position: relative; }
+.s-er3 .mini-double::before { content: ''; position: absolute; inset: 2px; border: 1px solid var(--accent); }
+.s-er3 .mini-line { height: 1.5px; background: var(--muted); }
+
+/* =============================================================
+   SLIDE 4 v2 — ER ATLAS (yatay sıralı: stats / png / foot) - eski
+   ============================================================= */
+.s-er2 .er2-stats {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  border-top: 2px solid var(--ink);
+  border-bottom: 1px solid var(--hair);
+  margin-bottom: 14px;
+}
+.s-er2 .er2-stat {
+  padding: 12px 16px 12px 0;
+  border-right: 1px solid var(--hair);
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.s-er2 .er2-stat:last-child { border-right: 0; }
+.s-er2 .er2-stat .n {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 34px;
+  font-weight: 400;
+  color: var(--accent);
+  letter-spacing: -0.025em;
+  line-height: 1;
+}
+.s-er2 .er2-stat .l {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  text-transform: uppercase;
+  font-weight: 500;
+}
+.s-er2 .er2-png {
+  position: relative;
+  background: var(--accent-bg-2);
+  border: 2px dashed var(--accent);
+  height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+.s-er2 .er2-png .ph-tag {
+  position: absolute;
+  top: 10px;
+  left: 14px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: var(--accent);
+  text-transform: uppercase;
+  font-weight: 600;
+  background: var(--paper);
+  padding: 2px 8px;
+}
+.s-er2 .er2-png .ph-side {
+  position: absolute;
+  bottom: 10px;
+  right: 14px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.s-er2 .er2-png .ph-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.s-er2 .er2-png .ph-icon {
+  width: 52px;
+  height: 52px;
+  border: 2px solid var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'IBM Plex Serif', serif;
+  font-style: italic;
+  font-size: 28px;
+  color: var(--accent);
+  margin-bottom: 14px;
+}
+.s-er2 .er2-png .ph-text {
+  font-family: 'IBM Plex Serif', serif;
+  font-style: italic;
+  font-size: 20px;
+  font-weight: 400;
+  color: var(--accent);
+  line-height: 1.3;
+}
+.s-er2 .er2-png .ph-sub {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--muted);
+  margin-top: 8px;
+  max-width: 480px;
+}
+.s-er2 .er2-foot {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0;
+  border-top: 1px solid var(--ink);
+  padding-top: 12px;
+}
+.s-er2 .foot-col {
+  padding: 0 22px;
+  border-right: 1px solid var(--hair);
+}
+.s-er2 .foot-col:first-child { padding-left: 0; }
+.s-er2 .foot-col:last-child { border-right: 0; padding-right: 0; }
+.s-er2 .foot-col .lbl {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--accent);
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+.s-er2 .foot-col .row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 7px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--ink);
+  line-height: 1.35;
+}
+.s-er2 .foot-col .row b {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 0.04em;
+}
+.s-er2 .mini-single,
+.s-er2 .mini-double,
+.s-er2 .mini-line {
+  display: inline-block;
+  width: 22px;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+.s-er2 .mini-single {
+  height: 12px;
+  border: 1.5px solid var(--ink);
+}
+.s-er2 .mini-double {
+  height: 12px;
+  border: 1.5px solid var(--accent);
+  position: relative;
+}
+.s-er2 .mini-double::before {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border: 1px solid var(--accent);
+}
+.s-er2 .mini-line {
+  height: 1.5px;
+  background: var(--muted);
+}
+
+/* =============================================================
+   SLIDE 5 v2 — TABLO ANATOMISI / KOD + ANNOTATION
+   ============================================================= */
+.s-ddl2 .ddl2-body {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 26px;
+  flex: 1;
+  margin-top: 4px;
+}
+.s-ddl2 .code-pane {
+  background: var(--code-bg);
+  border: 1px solid var(--ink);
+  padding: 18px 22px;
+  position: relative;
+  overflow: hidden;
+}
+.s-ddl2 .code-pane .filename {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: #8a8275;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #2a2620;
+  font-weight: 600;
+}
+.s-ddl2 .code-pane pre {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: var(--code-text);
+  white-space: pre;
+  overflow: hidden;
+  box-shadow: none;
+}
+.s-ddl2 .code-pane code {
+  background: transparent;
+  padding: 0;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: var(--code-text);
+}
+.s-ddl2 .code-pane .kw  { color: #d4a574; font-weight: 600; }
+.s-ddl2 .code-pane .fn  { color: #f4efe6; font-weight: 600; }
+.s-ddl2 .code-pane .str { color: #c97a5d; }
+.s-ddl2 .code-pane .com { color: #8a8275; font-style: italic; }
+.s-ddl2 .code-pane .num { color: #ddc7a1; }
+.s-ddl2 .code-pane .typ { color: #c0a378; }
+.s-ddl2 .code-pane .mark {
+  color: var(--accent-soft);
+  font-weight: 600;
+  background: rgba(154, 48, 48, 0.18);
+  padding: 0 4px;
+  border-radius: 2px;
+}
+
+.s-ddl2 .ddl2-marks {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.s-ddl2 .mark-row {
+  display: grid;
+  grid-template-columns: 38px 1fr;
+  gap: 14px;
+  align-items: start;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--hair);
+}
+.s-ddl2 .mark-row:last-child { border-bottom: 0; }
+.s-ddl2 .mark-row .num {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 30px;
+  font-weight: 400;
+  color: var(--accent);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.s-ddl2 .mark-row .title {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  margin-bottom: 4px;
+  line-height: 1.2;
+}
+.s-ddl2 .mark-row .desc {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted);
+  line-height: 1.4;
+}
+.s-ddl2 .mark-row .desc code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  background: var(--accent-bg);
+  color: var(--accent);
+  padding: 1px 4px;
+  font-weight: 600;
+}
+
+.s-ddl2 .ddl2-stats {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  margin-top: 18px;
+  border-top: 2px solid var(--ink);
+  border-bottom: 1px solid var(--hair);
+}
+.s-ddl2 .stat-cell {
+  padding: 10px 12px 9px 0;
+  border-right: 1px solid var(--hair);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  text-transform: uppercase;
+  font-weight: 500;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.s-ddl2 .stat-cell:last-child { border-right: 0; }
+.s-ddl2 .stat-cell b {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 24px;
+  font-weight: 400;
+  color: var(--accent);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+/* =============================================================
+   SLIDE 5 — DDL · EMPLOYEES (eski, kullanılmıyor — geriye dönük)
+   ============================================================= */
+.s-ddl .body {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 36px;
+  margin-top: 4px;
+  flex: 1;
+  align-items: start;
+}
+.s-ddl .body > div:first-child { border-top: 2px solid var(--ink); padding-top: 18px; }
+.s-ddl table { width: 100%; border-collapse: collapse; }
+.s-ddl table th {
+  text-align: left;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+  text-transform: uppercase;
+  font-weight: 600;
+  padding: 0 0 10px;
+  border-bottom: 1px solid var(--ink);
+}
+.s-ddl table td {
+  padding: 7px 0;
+  font-size: 13px;
+  border-bottom: 1px solid var(--hair-soft);
+  vertical-align: baseline;
+}
+.s-ddl table td.col {
+  font-family: 'IBM Plex Mono', monospace;
+  color: var(--accent);
+  font-weight: 600;
+}
+.s-ddl table td.typ {
+  font-family: 'IBM Plex Mono', monospace;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 400;
+}
+.s-ddl table td.kis {
+  font-family: 'IBM Plex Sans', sans-serif;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 400;
+}
+.s-ddl table td.kis em {
+  font-style: normal;
+  color: var(--muted-soft);
+}
+.s-ddl table td.kis .pk {
+  color: var(--accent);
+  font-weight: 700;
+}
+.s-ddl table td.kis .fk {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 500;
+}
+.s-ddl .props-card {
+  background: var(--accent-bg-2);
+  border-left: 3px solid var(--accent);
+  padding: 18px 22px 22px;
+}
+.s-ddl .props-card ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.s-ddl .props-card li {
+  position: relative;
+  padding-left: 22px;
+  margin-bottom: 13px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--ink);
+}
+.s-ddl .props-card li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 9px;
+  width: 8px;
+  height: 1px;
+  background: var(--accent);
+}
+.s-ddl .props-card li:last-child { margin-bottom: 0; }
+.s-ddl .props-card li strong { font-weight: 600; }
+.s-ddl .props-card li code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  background: var(--paper);
+  color: var(--accent);
+  padding: 1px 5px;
+  font-weight: 600;
+}
+
+/* =============================================================
+   SLIDE 6 — INDEXES
+   ============================================================= */
+.s-idx .body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 44px;
+  margin-top: 4px;
+  flex: 1;
+}
+.s-idx .body > div { border-top: 2px solid var(--ink); padding-top: 18px; }
+.s-idx table { width: 100%; border-collapse: collapse; }
+.s-idx table th {
+  text-align: left;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+  text-transform: uppercase;
+  font-weight: 600;
+  padding: 0 0 10px;
+  border-bottom: 1px solid var(--ink);
+}
+.s-idx table td {
+  padding: 9px 0;
+  font-size: 13px;
+  border-bottom: 1px solid var(--hair-soft);
+}
+.s-idx table td.tbl {
+  font-family: 'IBM Plex Sans', sans-serif;
+  color: var(--ink);
+  font-weight: 600;
+}
+.s-idx table td.col {
+  font-family: 'IBM Plex Mono', monospace;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 500;
+}
+.s-idx table td.ref {
+  font-family: 'IBM Plex Mono', monospace;
+  color: var(--ink);
+  font-size: 12px;
+}
+.s-idx .totals-line {
+  margin-top: 14px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 400;
+  line-height: 1.45;
+}
+.s-idx .totals-line strong { color: var(--accent); font-weight: 600; }
+.s-idx .uniq-list { display: flex; flex-direction: column; gap: 10px; }
+.s-idx .uniq-card {
+  background: var(--accent-bg-2);
+  border-left: 3px solid var(--accent);
+  padding: 12px 16px;
+}
+.s-idx .uniq-card .code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  color: var(--accent);
+  font-weight: 600;
+  margin-bottom: 3px;
+}
+.s-idx .uniq-card .rule {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--ink);
+  line-height: 1.35;
+}
+
+/* =============================================================
+   SLIDE 7 — DML 3 COLUMNS
+   ============================================================= */
+.s-dml .body {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0;
+  margin-top: 4px;
+  flex: 1;
+}
+.s-dml .col {
+  padding: 0 28px;
+  border-right: 1px solid var(--hair);
+}
+.s-dml .col:first-child { padding-left: 0; }
+.s-dml .col:last-child { border-right: 0; padding-right: 0; }
+.s-dml .col .header {
+  border-top: 3px solid var(--accent);
+  padding-top: 12px;
+  margin-bottom: 16px;
+}
+.s-dml .col .header .lbl {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--accent);
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.s-dml .col h3 {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 28px;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+}
+.s-dml .col h3 em {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--accent);
+}
+.s-dml .col ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.s-dml .col ul li {
+  position: relative;
+  padding-left: 22px;
+  margin-bottom: 12px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--ink);
+}
+.s-dml .col ul li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 9px;
+  width: 10px;
+  height: 1px;
+  background: var(--accent);
+}
+.s-dml .col ul li strong { font-weight: 600; color: var(--accent); }
+.s-dml .col code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  background: var(--accent-bg);
+  color: var(--accent);
+  padding: 1px 5px;
+  font-weight: 500;
+}
+
+/* =============================================================
+   SLIDE 8/9/10 — CODE SLIDES
+   ============================================================= */
+.s-code .body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 44px;
+  margin-top: 4px;
+  flex: 1;
+}
+.s-code .left { border-top: 2px solid var(--ink); padding-top: 18px; }
+.s-code .left ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.s-code .left ul li {
+  position: relative;
+  padding-left: 22px;
+  margin-bottom: 14px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--ink);
+}
+.s-code .left ul li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 9px;
+  width: 10px;
+  height: 1px;
+  background: var(--accent);
+}
+.s-code .left ul li strong { font-weight: 600; color: var(--accent); }
+.s-code .left ul li code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  background: var(--accent-bg);
+  color: var(--accent);
+  padding: 1px 5px;
+  font-weight: 500;
+}
+.s-code .code-pane {
+  background: var(--code-bg);
+  border: 1px solid var(--ink);
+  padding: 18px 22px;
+  position: relative;
+  overflow: hidden;
+}
+.s-code .code-pane .filename {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: #8a8275;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #2a2620;
+  font-weight: 600;
+}
+.s-code .code-pane pre {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--code-text);
+  white-space: pre;
+  overflow: hidden;
+  box-shadow: none;
+}
+.s-code .code-pane code {
+  background: transparent;
+  padding: 0;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--code-text);
+}
+.s-code .code-pane .kw  { color: #d4a574; font-weight: 600; }
+.s-code .code-pane .fn  { color: #f4efe6; font-weight: 600; }
+.s-code .code-pane .str { color: #c97a5d; }
+.s-code .code-pane .com { color: #8a8275; font-style: italic; }
+.s-code .code-pane .num { color: #ddc7a1; }
+.s-code .code-pane .typ { color: #c0a378; }
+.s-code .code-pane .id  { color: #b89968; }
+
+/* =============================================================
+   SLIDE 11 — NF CARDS
+   ============================================================= */
+.s-nf .cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin-top: 4px;
+  flex: 1;
+}
+.s-nf .nf-card {
+  background: rgba(235, 227, 208, 0.4);
+  border: 1px solid var(--hair);
+  border-top: 3px solid var(--accent);
+  padding: 22px 22px 24px;
+  display: flex;
+  flex-direction: column;
+}
+.s-nf .nf-card .tag {
+  display: inline-block;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  padding: 3px 12px;
+  margin-bottom: 16px;
+  align-self: flex-start;
+  background: var(--paper);
+}
+.s-nf .nf-card h3 {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  margin-bottom: 12px;
+  line-height: 1.15;
+}
+.s-nf .nf-card .desc {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted);
+  line-height: 1.5;
+  margin-bottom: 14px;
+}
+.s-nf .nf-card .example {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--ink);
+  line-height: 1.5;
+}
+.s-nf .nf-card .example strong { font-weight: 600; color: var(--accent); }
+.s-nf .nf-card .example code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  background: var(--paper);
+  color: var(--accent);
+  padding: 1px 5px;
+  font-weight: 600;
+}
+.s-nf .nf-card .check {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid var(--hair);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 0.02em;
+}
+
+/* =============================================================
+   SLIDE 12 — CONCLUSION
+   ============================================================= */
+.s-conc .grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px 48px;
+  margin-top: 4px;
+  flex: 1;
+  align-content: start;
+}
+.s-conc .item {
+  border-top: 2px solid var(--ink);
+  padding-top: 16px;
+}
+.s-conc .item .num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.s-conc .item h3 {
+  font-family: 'IBM Plex Serif', serif;
+  font-size: 26px;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  margin-bottom: 10px;
+}
+.s-conc .item h3 em {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--accent);
+}
+.s-conc .item p {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+.s-conc .item p strong { color: var(--accent); font-weight: 600; }
+.s-conc .footer-line {
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid var(--hair);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.s-conc .footer-line .repo {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 500;
+}
+.s-conc .footer-line .note {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+/* =============================================================
+   AÇIK TEMA KOD PANELİ — yuvarlak köşe, sağ-alt gölge, paper bg
+   ============================================================= */
+.s-code .code-pane,
+.s-ddl2 .code-pane {
+  background: #f1ebd6;
+  border: 1px solid var(--hair-soft);
+  border-radius: 12px;
+  box-shadow:
+    6px 7px 16px rgba(20, 17, 13, 0.10),
+    2px 0 4px rgba(20, 17, 13, 0.04);
+  padding: 18px 22px;
+  position: relative;
+  overflow: hidden;
+}
+.s-code .code-pane::before,
+.s-ddl2 .code-pane::before { display: none; }
+
+.s-code .code-pane .filename,
+.s-ddl2 .code-pane .filename {
+  color: var(--accent);
+  border-bottom: 1px solid var(--hair-soft);
+  font-weight: 600;
+}
+
+.s-code .code-pane pre,
+.s-code .code-pane code,
+.s-ddl2 .code-pane pre,
+.s-ddl2 .code-pane code {
+  color: var(--ink);
+}
+
+/* Açık zemin için syntax renkleri */
+.s-code .code-pane .kw,
+.s-ddl2 .code-pane .kw   { color: #7a1f1f; font-weight: 600; }            /* keyword — oxblood */
+.s-code .code-pane .fn,
+.s-ddl2 .code-pane .fn   { color: #14110d; font-weight: 700; }            /* function/table — bold ink */
+.s-code .code-pane .str,
+.s-ddl2 .code-pane .str  { color: #9a5a1a; }                              /* string — warm brown */
+.s-code .code-pane .com,
+.s-ddl2 .code-pane .com  { color: #968b7a; font-style: italic; }          /* comment — muted */
+.s-code .code-pane .num,
+.s-ddl2 .code-pane .num  { color: #4a6b3a; }                              /* number — dark olive */
+.s-code .code-pane .typ,
+.s-ddl2 .code-pane .typ  { color: #2a5a78; font-weight: 500; }            /* type — dark teal */
+.s-code .code-pane .id,
+.s-ddl2 .code-pane .id   { color: #6a3a8a; }                              /* identifier — deep purple */
+.s-ddl2 .code-pane .mark {
+  color: var(--accent);
+  background: rgba(122, 31, 31, 0.18);
+  padding: 0 5px;
+  border-radius: 3px;
+  font-weight: 600;
+}
+
+@media print {
+  .reveal .slides section { page-break-after: always; }
+}
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- SLIDE 1 — KAPAK -->
+<section>
+  <div class="slide s-cover">
+    <div class="topbar">
+      <div class="left">BİL312 - Veritabanı Sistemleri</div>
+    </div>
+
+    <div class="title-wrap">
+      <h1>Bordro<br>Yönetim<em>Sistemi</em></h1>
+      <p class="sub">Oracle PL/SQL ile birden fazla şirket barındıran bordro yönetim sisteminin veritabanı.</p>
+    </div>
+
+    <div class="footer">
+      <div class="col">
+        <div class="lbl">Platform</div>
+        <div class="val"> <em>Oracle 19c</em></div>
+      </div>
+      <div class="col">
+        <div class="lbl">Şablon</div>
+        <div class="val"> <em>15 tablo · 5 paket · 2 trigger</em> </div>
+      </div>
+      <div class="col">
+        <div class="lbl">Ekip</div>
+        <div class="val" style="color:var(--accent);">Selim Genç · İsa Mirza Sincap <br> Mirza Şakiroğlu · Ali Emre Aydın</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 2 — HEDEF VE YÖNTEM (ifade + 2x2 quadrant) -->
+<section>
+  <div class="slide s-ov2">
+    <div class="top-strip">
+      <div class="eyebrow"></div>
+      <div class="pagenum"><b>02</b> / 12</div>
+    </div>
+    <h2 class="section-title" style="font-size:44px; margin-bottom:18px;">Hedef ve Yöntem</h2>
+
+    <p class="statement">Bir bordro yönetim sistemi veritabanını <em> 3NF yapısında </em> kurduk: <br>15 tablo, 4 katman, sınırsız şirket.</p>
+
+    <div class="quad">
+      <div class="qbox">
+        <div class="qn">01</div>
+        <div class="qbody">
+          <div class="qlbl"></div>
+          <h4>SaaS <em>bordro motoru</em></h4>
+          <p>4 şirket × 30 personel, <code>fk_company_id</code> ile şema-içi tam tenant izolasyonu.</p>
+        </div>
+      </div>
+      <div class="qbox">
+        <div class="qn">02</div>
+        <div class="qbody">
+          <div class="qlbl"></div>
+          <h4>İş <em>kuralı</em>, şemada</h4>
+          <p>TCKN tekilliği, ay başına tek bordro — composite UNIQUE'lerle veritabanında.</p>
+        </div>
+      </div>
+      <div class="qbox">
+        <div class="qn">03</div>
+        <div class="qbody">
+          <div class="qlbl"></div>
+          <h4>5 paket, <em>2 trigger</em></h4>
+          <p>entry · update · delete · reports · maintenance + Attendance ve Audit refleksleri.</p>
+        </div>
+      </div>
+      <div class="qbox">
+        <div class="qn">04</div>
+        <div class="qbody">
+          <div class="qlbl"></div>
+          <h4>Oracle 19c <em>·</em> PL/SQL</h4>
+          <p>SQL Developer, draw.io ile Chen notasyonu — 124 satır seed verisiyle doğrulandı.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 3 — 11 STRONG + 4 WEAK ENTITY GRID -->
+<section>
+  <div class="slide s-entities">
+    <div class="top-strip">
+      <div class="eyebrow">Tablolar</div>
+      <div class="pagenum"><b>03</b> / 12</div>
+    </div>
+    <h2 class="section-title" style="font-size:44px; margin-bottom:18px;">Güçlü ve <em>Weak</em> Entity'ler</h2>
+
+    <div class="body">
+      <!-- 11 strong entity (single border) -->
+      <div class="col-section strong">
+        <div class="col-head">
+          <div class="num">11</div>
+          <div class="titlebox">
+            <div class="lbl"></div>
+            <h3>Bağımsız <em>Varlıklar</em></h3>
+          </div>
+        </div>
+        <div class="ents">
+          <div class="ent">COMPANIES<span class="sub">şirketler</span></div>
+          <div class="ent">USERS<span class="sub">kullanıcılar</span></div>
+          <div class="ent">DEPARTMENTS<span class="sub">birimler</span></div>
+          <div class="ent">JOB_TITLES<span class="sub">unvan</span></div>
+          <div class="ent">TAX_SLABS<span class="sub">vergi dilimleri</span></div>
+          <div class="ent">STATUTORY_<br>PARAMETERS<span class="sub">yasal oran</span></div>
+          <div class="ent">ALLOWANCE_<br>TYPES<span class="sub">ek ödeme tipi</span></div>
+          <div class="ent">DEDUCTION_<br>TYPES<span class="sub">kesinti tipi</span></div>
+          <div class="ent featured">EMPLOYEES<span class="sub">çalışanlar</span></div>
+          <div class="ent">PAYROLL_<br>SUMMARY<span class="sub">bordro özeti</span></div>
+          <div class="ent">PAYROLL_LOGS<span class="sub">loglar</span></div>
+        </div>
+      </div>
+
+      <!-- 4 weak entity (double border) -->
+      <div class="col-section weak">
+        <div class="col-head">
+          <div class="num">04</div>
+          <div class="titlebox">
+            <div class="lbl"></div>
+            <h3>Bağımlı <em>Varlıklar</em></h3>
+          </div>
+        </div>
+        <div class="ents">
+          <div class="ent">EMPLOYEE_CONTRACTS<span class="sub">sözleşmeler · Employees</span></div>
+          <div class="ent">ATTENDANCE_RECORDS<span class="sub">puantaj · Employees</span></div>
+          <div class="ent">EMPLOYEE_ALLOWANCES<span class="sub">yan haklar · Employees</span></div>
+          <div class="ent">EMPLOYEE_DEDUCTIONS<span class="sub">kesintiler · Employees</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footnote">
+      <strong>Toplam 15 varlık · şirket bazlı veri ayrımı. </strong> &nbsp; Her tabloya <code>fk_company_id</code> ekledik — farklı şirketlerin kayıtları aynı tablolarda durur ama veritabanı her satırın kime ait olduğunu bilir. Tek bir kurulum, sınırsız sayıda şirkete hizmet verir.
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 4 — ER · BÜYÜK PNG + DİKEY YAN PANEL -->
+<section>
+  <div class="slide s-er3">
+    <div class="top-strip">
+      <div class="eyebrow">03 · Varlık İlişki Haritası</div>
+      <div class="pagenum"><b>04</b> / 12</div>
+    </div>
+    <h2 class="section-title" style="font-size:38px; margin-bottom:14px;"> <em>ER Diyagramı</em></h2>
+
+    <div class="body">
+      <!-- dominant PNG bölgesi -->
+      <div class="er3-png">
+        <span class="ph-tag"></span>
+        <span class="ph-corner c-tl"></span>
+        <span class="ph-corner c-bl"></span>
+        <span class="ph-corner c-br"></span>
+        <div class="ph-center">
+          <div class="ph-icon"></div>
+          <div class="ph-text"><br></div>
+          <div class="ph-sub"></div>
+        </div>
+      </div>
+
+      <!-- sağ dikey yan panel -->
+      <div class="side">
+        <div class="side-block">
+          <div class="lbl">Diyagram İçeriği</div>
+          <div class="side-stats">
+            <div class="side-stat"><div class="n">15</div><div class="l">entity</div></div>
+            <div class="side-stat"><div class="n">20</div><div class="l">ilişki</div></div>
+            <div class="side-stat"><div class="n">04</div><div class="l">weak</div></div>
+            <div class="side-stat"><div class="n">93</div><div class="l">attribute</div></div>
+          </div>
+        </div>
+
+        <div class="side-block">
+          <div class="lbl">Notasyon</div>
+          <div class="side-row"><span class="mini-single"></span> Strong entity <b>11</b></div>
+          <div class="side-row"><span class="mini-double"></span> Weak entity <b>04</b></div>
+          <div class="side-row"><span class="mini-line"></span> İlişki çizgisi</div>
+        </div>
+
+        <div class="side-block">
+          <div class="lbl">Kardinalite Örneklerimiz</div>
+          <div class="side-row"><b>1:1</b> Employee ↔ Contract</div>
+          <div class="side-row"><b>1:N</b> Company → 14 tablo</div>
+          <div class="side-row"><b>M:N</b> Employee ↔ Allowance</div>
+        </div>
+
+        <div class="side-block">
+          <div class="lbl">Sınırsız Kiracı Yapısı</div>
+          <div class="side-row"><b>fk_company_id</b> 15 tabloda da mevcut</div>
+          <div class="side-row">Companies → 14 tablo 1:N</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 5 — DDL · KOD + ANNOTATION LAYOUT -->
+<section>
+  <div class="slide s-ddl2">
+    <div class="top-strip">
+      <div class="eyebrow">04 · Tablo Anatomisi</div>
+      <div class="pagenum"><b>05</b> / 12</div>
+    </div>
+    <h2 class="section-title" style="font-size:46px; margin-bottom:14px;">Örnek: <em>Employee Tablosu</em></h2>
+
+    <div class="ddl2-body">
+      <!-- gerçek SQL kodu sol tarafta -->
+      <div class="code-pane">
+        <div class="filename">sql / 01_create_tables.sql · CREATE TABLE Employees</div>
+<pre><code><span class="kw">CREATE TABLE</span> <span class="fn">Employees</span> (
+    employee_id        <span class="typ">NUMBER</span>,
+    fk_company_id      <span class="typ">NUMBER</span> <span class="kw">NOT NULL</span>,
+    fk_department_id   <span class="typ">NUMBER</span> <span class="kw">NOT NULL</span>,
+    fk_job_title_id    <span class="typ">NUMBER</span> <span class="kw">NOT NULL</span>,
+    employee_code      <span class="typ">VARCHAR2</span>(<span class="num">30</span>),                       
+    national_id        <span class="typ">VARCHAR2</span>(<span class="num">11</span>),                       
+    first_name         <span class="typ">VARCHAR2</span>(<span class="num">50</span>) <span class="kw">NOT NULL</span>,
+    last_name          <span class="typ">VARCHAR2</span>(<span class="num">50</span>) <span class="kw">NOT NULL</span>,
+    birth_date         <span class="typ">DATE</span>,
+    marital_status     <span class="typ">VARCHAR2</span>(<span class="num">20</span>),
+    children_count     <span class="typ">NUMBER</span>(<span class="num">2</span>) <span class="kw">DEFAULT</span> <span class="num">0</span>,
+    hire_date          <span class="typ">DATE</span> <span class="kw">NOT NULL</span>
+);
+
+<span class="kw">ALTER TABLE</span> Employees <span class="kw">ADD CONSTRAINT</span> pk_employees
+    <span class="kw">PRIMARY KEY</span> (employee_id);
+<span class="kw">ALTER TABLE</span> Employees <span class="kw">ADD CONSTRAINT</span> uq_emp_tckn,
+    <span class="kw">UNIQUE</span> (fk_company_id, national_id);</code></pre>
+      </div>
+
+      <!-- numaralı tasarım kararları sağda -->
+      <div class="ddl2-marks">
+        <div class="mark-row">
+          <div class="num">①</div>
+          <div>
+            <div class="title">Güvenlik
+            </div>
+            <div class="desc">Aynı şirkette iki personelin TCKN'si veya kodu aynı olamaz. Bu kuralı <code>UNIQUE</code> ile veritabanına gömdük; programcı unutsa bile kayıt geçmez.</div>
+          </div>
+        </div>
+        <div class="mark-row">
+          <div class="num">②</div>
+          <div>
+            <div class="title">Her Satır Bir Şirkete Ait</div>
+            <div class="desc">Her kayıtta <code>fk_company_id</code> kolonu var; "bu personel hangi şirketin?" sorusunun cevabını taşır. Farklı şirketler aynı tabloda durur ama birbirine karışmaz.</div>
+          </div>
+        </div>
+        <div class="mark-row">
+          <div class="num">③</div>
+          <div>
+            <div class="title">Null Pointer Exception Önlemi</div>
+            <div class="desc">Çocuk sayısı yazılmazsa otomatik <code>DEFAULT 0</code> olur. Hücre NULL kalmaz, maaş hesabında "tanımsız değer" hatası çıkmaz.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- alt rakamsal şerit -->
+    
+  </div>
+</section>
+
+<!-- SLIDE 6 — KISITLAR SADE 2x2 KART -->
+<section>
+  <div class="slide s-idx4">
+    <div class="top-strip">
+      <div class="eyebrow">05 · Bütünlük Kuralları</div>
+      <div class="pagenum"><b>06</b> / 12</div>
+    </div>
+    <h2 class="section-title" style="font-size:46px; margin-bottom:18px;">Anahtarlar ve <em>Kısıtlar</em></h2>
+
+    <div class="grid">
+      <!-- 01 — Birincil Anahtar -->
+      <div class="card">
+        <div class="head">
+          <div class="num">15</div>
+          <div class="lbl"><div class="term">Birincil<br>Anahtar</div></div>
+        </div>
+        <h4>Her Satıra Bir Kimlik</h4>
+        <p>15 tablonun her birinde benzersiz bir ID kolonu var. Bu ID kaydı tek başına temsil eder; aynı tabloda iki satır asla aynı ID'ye sahip olamaz.</p>
+        <div class="example">Personel: <b>employee_id</b> &nbsp;·&nbsp; Bordro: <b>payroll_id</b> &nbsp;·&nbsp; Şirket: <b>company_id</b></div>
+      </div>
+
+      <!-- 02 — Yabancı Anahtar -->
+      <div class="card">
+        <div class="head">
+          <div class="num">23</div>
+          <div class="lbl"><div class="term">Yabancı<br>Anahtar</div></div>
+        </div>
+        <h4>Tablolar Arası Bağlantı</h4>
+        <p>Bir tablodaki kayıt başka tabloya referans veriyorsa, araya <code>fk_</code> ile başlayan bir kolon koyduk. Veritabanı bu bağlantıyı sürekli kontrol eder; olmayan bir kayda referans verilemez.</p>
+        <div class="example">Personel hangi departmanda? &nbsp; <b>fk_department_id</b> cevap verir.</div>
+      </div>
+
+      <!-- 03 — Tekillik Kuralı (accent) -->
+      <div class="card accent">
+        <div class="head">
+          <div class="num">04</div>
+          <div class="lbl"><div class="term">Tekillik<br>Kuralı</div></div>
+        </div>
+        <h4>Aynısından İki Tane Olamaz</h4>
+        <p>Bazı iş kurallarını doğrudan veritabanına yazdık — programcı unutsa bile kayıt geçmez. Aynı şirkette iki kez aynı TCKN, ya da bir personele aynı ay için iki bordro: imkânsız.</p>
+        <div class="example">Kurallar: <b>(şirket + TCKN)</b> &nbsp;·&nbsp; <b>(şirket + kod)</b> &nbsp;·&nbsp; <b>(personel + ay)</b></div>
+      </div>
+
+      <!-- 04 — Arama İndeksi -->
+      <div class="card">
+        <div class="head">
+          <div class="num">04</div>
+          <div class="lbl"><div class="term">Arama<br>İndeksi</div></div>
+        </div>
+        <h4>Sorguları Hızlandırma</h4>
+        <p>Sık aranan kolonlar için ekstra bir arama dizini oluşturduk. Veritabanı, indeksli kolonu çok daha hızlı bulur — telefon rehberinin alfabetik sıralı olması gibi.</p>
+        <div class="example">Şirkete göre personel &nbsp;·&nbsp; Personele göre puantaj &nbsp;·&nbsp; Personele göre bordro</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 7 — DML · YATAY AKIŞ -->
+<section>
+  <div class="slide s-dml2">
+    <div class="top-strip">
+      <div class="eyebrow"> Operasyonel Döngü</div>
+      <div class="pagenum"><b>07</b> / 12</div>
+    </div>
+    <h2 class="section-title" style="font-size:46px; margin-bottom:18px;">Üç <em>İşlem</em></h2>
+
+    <div class="flow">
+      <div class="step">
+        <div class="step-head">
+          <div class="stage-row">
+            <div class="stnum">01</div>
+            <div class="stbox">
+              <h3>INSERT <em>· Veri Girişi</em></h3>
+              <div class="pkg">pkg_payroll_entry · 7 procedure</div>
+            </div>
+          </div>
+        </div>
+        <ul>
+          <li>Test bloğu 4 şirket × 31 personel = <strong>124 satır</strong></li>
+          <li>Sıra: <code>add_company</code> → <code>add_department</code> → <code>add_job_title</code></li>
+          <li>Sonra <code>add_user</code> → <code>add_employee</code> → <code>add_contract</code> → <code>add_payroll</code></li>
+          <li>Tenant ID parametresi olmadan tek INSERT geçmez</li>
+        </ul>
+      </div>
+
+      <div class="arrow"></div>
+
+      <div class="step">
+        <div class="step-head">
+          <div class="stage-row">
+            <div class="stnum">02</div>
+            <div class="stbox">
+              <h3>UPDATE <em>· Düzeltme</em></h3>
+              <div class="pkg">pkg_payroll_update · 3 procedure</div>
+            </div>
+          </div>
+        </div>
+        <ul>
+          <li><code>update_employee_job</code> personeli yeni departman/unvana taşır</li>
+          <li><code>update_contract_salary</code> yalnızca <code>is_active = 1</code> sözleşmelere uygulanır</li>
+          <li><code>update_attendance</code> hatalı puantajı üstüne yazar</li>
+          <li>Her UPDATE'te <code>fk_company_id</code> ve <code>SQL%ROWCOUNT</code> kontrolü</li>
+        </ul>
+      </div>
+
+      <div class="arrow"></div>
+
+      <div class="step">
+        <div class="step-head">
+          <div class="stage-row">
+            <div class="stnum">03</div>
+            <div class="stbox">
+              <h3>DELETE <em>· Silme</em></h3>
+              <div class="pkg">pkg_payroll_delete · 3 procedure</div>
+            </div>
+          </div>
+        </div>
+        <ul>
+          <li>Bir personeli silmek aslında <strong>5 farklı tabloyu temizlemek</strong> demek — sözleşme, puantaj, ek ödeme, kesinti ve bordro kayıtları ona bağlı</li>
+          <li>Doğrudan <code>DELETE</code> Oracle tarafından <em>"bağlı kayıt var"</em> diye reddedilir; bu yüzden <code>ON DELETE CASCADE</code> kullanmadık</li>
+          <li>Yerine <strong>manuel zincir</strong> yazdık — yapraktan köke doğru: Logs → Summary → Allowances/Deductions/Attendance → Contracts → Employees</li>
+          <li>Faydası: hangi adımda kaç kayıt silindiğini görebilir, log'layabilir ve adımları ayrı ayrı test edebiliriz</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 8 — TRIGGER · KOD SOL, DİKEY YAN BLOKLAR SAĞ (slayt 9/10 ile aynı format) -->
+<section>
+  <div class="slide s-code s-code-side">
+    <div class="top-strip">
+      <div class="eyebrow">07 · Tablo Refleksleri</div>
+      <div class="pagenum"><b>08</b> / 12</div>
+    </div>
+    <h2 class="section-title" style="font-size:48px;">Otomatik <em>Tetiklemeler</em> </h2>
+
+    <div class="body">
+      <div class="code-pane">
+        <div class="filename">sql / 03_sequences_triggers.sql · trg_after_emp_insert</div>
+<pre><code><span class="kw">CREATE OR REPLACE TRIGGER</span> <span class="fn">trg_after_emp_insert</span>
+<span class="kw">AFTER INSERT ON</span> Employees
+<span class="kw">FOR EACH ROW</span>
+<span class="kw">DECLARE</span>
+    v_month <span class="typ">NUMBER</span> := <span class="fn">EXTRACT</span>(<span class="kw">MONTH FROM</span> <span class="id">SYSDATE</span>);
+    v_year  <span class="typ">NUMBER</span> := <span class="fn">EXTRACT</span>(<span class="kw">YEAR FROM</span> <span class="id">SYSDATE</span>);
+<span class="kw">BEGIN</span>
+    <span class="kw">INSERT INTO</span> Attendance_Records (
+        attendance_id, fk_employee_id, fk_company_id,
+        record_month, record_year,
+        worked_days, overtime_hours
+    ) <span class="kw">VALUES</span> (
+        seq_attendance_id.<span class="kw">NEXTVAL</span>,
+        :<span class="id">NEW</span>.employee_id, :<span class="id">NEW</span>.fk_company_id,
+        v_month, v_year,
+        <span class="num">0</span>, <span class="num">0</span>
+    );
+<span class="kw">END</span>;</code></pre>
+      </div>
+
+      <div class="side-stack">
+        <div class="side-block">
+          <div class="num">01 · Davranış</div>
+          <h4>Otomatik <em>Puantaj Kaydı</em></h4>
+          <p>Personel <strong>EMPLOYEES</strong>'a eklendiği anda o ayki puantaj kaydı <strong>ATTENDANCE_RECORDS</strong>'da kendiliğinden oluşur. Mantık <code>AFTER INSERT</code> üzerinde, satır başına çalışır <code>(FOR EACH ROW)</code>.</p>
+        </div>
+
+        <div class="side-block">
+          <div class="num">02 · Neden</div>
+          <h4>İnsan Hatası <em>Şemadan</em></h4>
+          <p>"İK puantaj eklemeyi unuttu" hatasını şemanın kendisi ortadan kaldırır. Operasyonel hatanın kaynağı kod katmanında bırakılmıyor; veritabanı kendiliğinden eksiksiz çalışıyor.</p>
+        </div>
+
+        <div class="side-block accent">
+          <div class="num">03 · İkinci Trigger</div>
+          <h4>Audit <em>Otomasyonu</em></h4>
+          <p>İkinci trigger <code>trg_payroll_audit</code>, bordro üzerindeki her DML'i <strong>PAYROLL_LOGS</strong>'a yazar. <code>INSERTING / UPDATING / DELETING</code> dahili değişkenleri ile tek trigger üç olayı ayırır.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 9 — ESNEK FİLTRELER · KOD SOL, DİKEY YAN BLOKLAR SAĞ -->
+<section>
+  <div class="slide s-code s-code-side">
+    <div class="top-strip">
+      <div class="eyebrow">08 · Çalışma Anı Sorgular</div>
+      <div class="pagenum"><b>09</b> / 12</div>
+    </div>
+    <h2 class="section-title" style="font-size:46px; margin-bottom:14px;">Esnek <em>Filtreler</em></h2>
+
+    <div class="body">
+      <div class="code-pane">
+        <div class="filename">sql / packages / pkg_payroll_reports.pkb · get_employee_report</div>
+<pre><code><span class="com">-- Sorguya başlangıç</span>
+v_sql := <span class="str">'SELECT ... FROM Employees e '</span> ||
+         <span class="str">'WHERE e.fk_company_id = '</span> || p_company_id;
+
+<span class="com">-- Departman seçildiyse WHERE bloğuna ekle</span>
+<span class="kw">IF</span> p_department_id <span class="kw">IS NOT NULL</span> <span class="kw">THEN</span>
+    v_sql := v_sql || <span class="str">' AND e.fk_department_id = '</span>
+                   || p_department_id;
+<span class="kw">END IF</span>;
+
+<span class="com">-- Unvan seçildiyse WHERE bloğuna ekle</span>
+<span class="kw">IF</span> p_job_title_id <span class="kw">IS NOT NULL</span> <span class="kw">THEN</span>
+    v_sql := v_sql || <span class="str">' AND e.fk_job_title_id = '</span>
+                   || p_job_title_id;
+<span class="kw">END IF</span>;
+
+<span class="kw">OPEN</span> v_cursor <span class="kw">FOR</span> v_sql;
+<span class="kw">RETURN</span> v_cursor;</code></pre>
+      </div>
+
+      <div class="side-stack">
+        <div class="side-block">
+          <div class="num">01 · Mekanizma</div>
+          <h4>Çalışma <em>Anında</em> Sorgu Kurulumu</h4>
+          <p><code>WHERE</code> bloğunu çalışma zamanında, kullanıcının verdiği parametrelere bakarak inşa ediyoruz. Departman parametresi geldiyse sorguya <code>AND e.fk_department_id</code> ekleniyor; gelmediyse hiç katılmıyor. Tek bir fonksiyon, sınırsız filtre kombinasyonuna hizmet eder.</p>
+        </div>
+
+        <div class="side-block">
+          <div class="num">02 · Geri Dönüş</div>
+          <h4>Cursor ile <em>Akış</em></h4>
+          <p>Fonksiyon, satırları doğrudan döndürmek yerine bir <code>SYS_REFCURSOR</code> referansı verir. Çağıran taraf cursor'ı açıp satırları teker teker okur — büyük sonuç kümelerinde bellek kullanımı minimumda kalır.</p>
+        </div>
+
+        <div class="side-block accent">
+          <div class="num">03 · İki Fonksiyon</div>
+          <h4>Eksiksiz <em>Raporlama</em></h4>
+          <p><code>get_employee_report</code> — şirket zorunlu, departman ve unvan opsiyonel; çalışan listesi alınır. <code>get_monthly_payroll</code> — şirket, ay, yıl zorunlu; personel opsiyonel; aylık bordro raporu alınır.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 10 — MAİNTENANCE · KOD SOL, DİKEY YAN BLOKLAR SAĞ (slayt 9 ile aynı format) -->
+<section>
+  <div class="slide s-code s-code-side">
+    <div class="top-strip">
+      <div class="eyebrow">09 · Veri Hijyeni</div>
+      <div class="pagenum"><b>10</b> / 12</div>
+    </div>
+    <h2 class="section-title" style="font-size:44px; margin-bottom:14px;"><em>Mükerrer Kayıt</em> Temizliği</h2>
+
+    <div class="body">
+      <div class="code-pane">
+        <div class="filename">sql / packages / pkg_payroll_maintenance.pkb · remove_all_duplicates</div>
+<pre><code><span class="com">-- 1) Employees: aynı şirkette aynı TCKN'leri sil</span>
+<span class="kw">DELETE FROM</span> Employees
+<span class="kw">WHERE</span> rowid <span class="kw">NOT IN</span> (
+    <span class="kw">SELECT MIN</span>(rowid) <span class="kw">FROM</span> Employees
+    <span class="kw">GROUP BY</span> fk_company_id, national_id
+);
+
+<span class="com">-- 2) Companies: NULL-safe varyant</span>
+<span class="kw">DELETE FROM</span> Companies
+<span class="kw">WHERE</span> tax_number <span class="kw">IS NOT NULL</span>
+  <span class="kw">AND</span> rowid <span class="kw">NOT IN</span> (
+    <span class="kw">SELECT MIN</span>(rowid) <span class="kw">FROM</span> Companies
+    <span class="kw">WHERE</span> tax_number <span class="kw">IS NOT NULL</span>
+    <span class="kw">GROUP BY</span> tax_number
+);
+
+<span class="com">-- 3) Atomicity güvencesi</span>
+<span class="kw">EXCEPTION WHEN</span> <span class="id">OTHERS</span> <span class="kw">THEN</span>
+    <span class="kw">ROLLBACK</span>;
+    <span class="fn">RAISE_APPLICATION_ERROR</span>(<span class="num">-20020</span>,
+        <span class="str">'Dedupe başarısız: '</span> || <span class="id">SQLERRM</span>);</code></pre>
+      </div>
+
+      <div class="side-stack">
+        <div class="side-block">
+          <div class="num">01 · Kapsam</div>
+          <h4>15 Tablonun <em>Tamamı</em></h4>
+          <p><code>remove_all_duplicates</code> tek bir prosedürdür ve şemanın 15 tablosunda da çalışır. Her tabloda business key gruplarına bakar; her gruptan yalnızca <code>MIN(rowid)</code> satırını tutar, kalan kopyaları siler.</p>
+        </div>
+
+        <div class="side-block">
+          <div class="num">02 · NULL-Safe</div>
+          <h4>Companies İçin <em>Özel Filtre</em></h4>
+          <p>Companies'te <code>tax_number</code> NULL olabilir. Eğer NULL değerleri normal <code>GROUP BY</code> ile gruplarsak, tüm NULL satırlar tek bir grup sayılır — yanlış sonuç. Bu yüzden <code>tax_number IS NOT NULL</code> filtresini hem dış DELETE'te hem iç SELECT'te kullanırız.</p>
+        </div>
+
+        <div class="side-block accent">
+          <div class="num">03 · Atomicity</div>
+          <h4>Hepsi veya <em>Hiçbiri</em></h4>
+          <p>Prosedürün sonunda tek <code>EXCEPTION WHEN OTHERS</code> bloğu var. 15 tablodan birinde hata olursa <code>ROLLBACK</code> çalışır ve önceki temizlikler de geri sarılır. Yarım bir temizlik durumu oluşmaz.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 11 — 3NF DİKEY · 3 DETAYLI BLOK -->
+<section>
+  <div class="slide s-nf3">
+    <div class="top-strip">
+      <div class="eyebrow">10 · Normal Form Sertifikası</div>
+      <div class="pagenum"><b>11</b> / 12</div>
+    </div>
+    <h2 class="section-title" style="font-size:46px; margin-bottom:18px;">3NF <em>Doğrulaması</em></h2>
+
+    <div class="progression">
+      <!-- 1NF -->
+      <div class="nf-block">
+        <div class="tag-block">
+          <div class="tag">1NF</div>
+          <div class="step">Birinci Aşama</div>
+        </div>
+        <div class="content">
+          <h4>Atomik <em>Değerler</em></h4>
+          <p class="principle">Her hücrede tek, bölünmez bir değer olur. Tekrarlayan sütun grupları (örn. çoklu telefon numaraları, aylık maaş kolonları) yasaktır — her satır bir birincil anahtarla tanımlıdır.</p>
+          <p class="example"><strong>Bizim örneğimiz:</strong> <code>Ocak_Maaşı, Şubat_Maaşı, Mart_Maaşı…</code> şeklinde 12 sütun açmadık. Bunun yerine <code>Payroll_Summary</code>'de <code>period_month</code> + <code>period_year</code> ile her ay ayrı bir <strong>satır</strong> olarak tutulur.</p>
+        </div>
+        <div class="verdict">
+          <div class="check"></div>
+          <div class="stat">15 / 15 tablo</div>
+        </div>
+      </div>
+
+      <!-- 2NF -->
+      <div class="nf-block">
+        <div class="tag-block">
+          <div class="tag">2NF</div>
+          <div class="step">İkinci Aşama</div>
+        </div>
+        <div class="content">
+          <h4>Tam <em>Bağımlılık</em></h4>
+          <p class="principle">1NF sağlanmış olmalı + kısmi bağımlılık olmamalı. Yani PK olmayan her sütun, anahtarın <strong>tümüne</strong> bağlı olmalı, parçasına değil.</p>
+          <p class="example"><strong>Bizim örneğimiz:</strong> 15 tablonun tamamında PK tek sütundur. Bileşik (composite) PK'mız hiç yok; dolayısıyla "anahtarın bir parçasına bağlı" diye bir durum matematiksel olarak imkânsızdır.</p>
+        </div>
+        <div class="verdict">
+          <div class="check"></div>
+          <div class="stat">15 Primary Key</div>
+        </div>
+      </div>
+
+      <!-- 3NF -->
+      <div class="nf-block">
+        <div class="tag-block">
+          <div class="tag">3NF</div>
+          <div class="step">Üçüncü Aşama</div>
+        </div>
+        <div class="content">
+          <h4>Geçişsiz <em>Bağımlılık</em></h4>
+          <p class="principle">2NF sağlanmış olmalı + geçişli bağımlılık olmamalı. PK olmayan bir sütun, başka bir PK-dışı sütuna bağlıysa bu kötü tasarımdır — veriyi ayrı tabloya çıkar.</p>
+          <p class="example"><strong>Bizim örneğimiz:</strong> Departman adı <code>EMPLOYEES</code>'a yazılmadı, <code>DEPARTMENTS</code>'tan <code>fk_department_id</code> üzerinden okunur. Aynı yaklaşım unvan (<code>Job_Titles</code>), ek ödeme tipi (<code>Allowance_Types</code>) ve kesinti tipi (<code>Deduction_Types</code>) için de uygulanır.</p>
+        </div>
+        <div class="verdict">
+          <div class="check"></div>
+          <div class="stat">0 anomali</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 12 — BİLANÇO · BÜYÜK RAKAM ŞERİDİ + YATAY DELİL SATIRLARI -->
+<section>
+  <div class="slide s-conc2">
+    <div class="top-strip">
+      <div class="eyebrow">11 · Bilanço</div>
+      <div class="pagenum"><b>12</b> / 12</div>
+    </div>
+    <h2 class="section-title" style="font-size:46px; margin-bottom:14px;">Projenin <em>Özeti</em></h2>
+
+    <!-- üst dev rakam şeridi -->
+    <div class="big-stats">
+      <div class="big-stat">
+        <div class="n"> 15</div>
+        <div class="l">Tablo · 4 Katman</div>
+      </div>
+      <div class="big-stat">
+        <div class="n">  05</div>
+        <div class="l">PL/SQL Paketi · 2 Trigger</div>
+      </div>
+      <div class="big-stat">
+        <div class="n">  124</div>
+        <div class="l">Test Edilen Personel</div>
+      </div>
+      <div class="big-stat">
+        <div class="n">  0</div>
+        <div class="l">Şema Anomalisi</div>
+      </div>
+    </div>
+
+    <!-- yatay delil satırları -->
+    <br>
+    <div class="evidence">
+      <div class="ev-row">
+        <div class="qn">Kanıt 01</div>
+        <h3><em>Şema</em></h3>
+        <p><strong>15 tablo, 4 katman</strong> ve her tabloya iliştirilmiş <strong>fk_company_id</strong>. Tek bir veritabanı; sınırsız sayıda mantıksal bordro kiracısı.</p>
+      </div>
+      <br>
+      <div class="ev-row">
+        <div class="qn">Kanıt 02</div>
+        <h3><em>Bütünlük</em></h3>
+        <p>İş kuralları PL/SQL kodu yerine doğrudan <strong>composite UNIQUE</strong>'lara gömüldü. İki trigger reflekssiz bırakmıyor; audit log her hareketi kaydediyor.</p>
+      </div>
+      <br>
+      <div class="ev-row">
+        <div class="qn">Kanıt 03</div>
+        <h3><em>İşlem</em></h3>
+        <p><strong>5 PL/SQL paketi</strong>, 16 prosedür ve fonksiyon. 4 şirket için 124 personel seed üretildi; hiyerarşik silme ve dinamik raporlama doğrulandı.</p>
+      </div>
+      <br>
+      <div class="ev-row">
+        <div class="qn">Kanıt 04</div>
+        <h3><em>Normal Form</em></h3>
+        <p>1NF, 2NF, 3NF şemanın doğal sonucu — Primary Key + ayrı tanım tabloları. INSERT / UPDATE / DELETE anomalileri matematiksel olarak <strong>ortadan kalktı</strong>.</p>
+      </div>
+    </div>
+
+    <div class="end-line">
+      <div class="note">Bordro Yönetim Sistemi · 12 / 12 </div>
+    </div>
+  </div>
+</section>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script>
+Reveal.initialize({
+  width: 1280,
+  height: 800,
+  margin: 0,
+  minScale: 0.2,
+  maxScale: 2.0,
+  controls: false,
+  progress: true,
+  hash: true,
+  transition: 'slide',
+  transitionSpeed: 'default',
+  backgroundTransition: 'none',
+  center: false,
+  embedded: false,
+  pdfSeparateFragments: false
+});
+
+if (window.location.search.match(/print-pdf/gi)) {
+  var link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.type = 'text/css';
+  link.href = 'https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/css/print/pdf.css';
+  document.getElementsByTagName('head')[0].appendChild(link);
+}
+</script>
+
+</body>
+</html>
