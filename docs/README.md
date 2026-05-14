@@ -1,9 +1,9 @@
 # Bordro Yönetim Sistemi — Veritabanı Projesi
 
-**Ders:** Veritabanı Yönetim Sistemleri
+**Ders:** BİL312 - Veritabanı Yönetim Sistemleri
 **Teknoloji:** Oracle Database, PL/SQL
-**Mimari:** SaaS Multi-tenancy (her tabloda `fk_company_id`)
-**Tablo Sayısı:** 15 (gereksinim: en az 12)
+**Mimari:** SaaS Multi-tenancy 
+**Tablo Sayısı:** 15 
 
 ## Proje Özeti
 
